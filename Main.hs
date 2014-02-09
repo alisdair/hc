@@ -2,24 +2,22 @@ module Main where
 
 import System.Environment (getArgs)
 import Control.Monad (liftM)
+import Data.Maybe (fromMaybe)
 
 type Function = (Int -> Int -> Int)
 
 data Term = Operator Function | Number Int
 
-function :: String -> Maybe Function
-function "*" = Just (*)
-function "/" = Just (div)
-function "+" = Just (+)
-function "-" = Just (-)
+function :: String -> Maybe Term
+function "*" = Just $ Operator (*)
+function "/" = Just $ Operator (div)
+function "+" = Just $ Operator (+)
+function "-" = Just $ Operator (-)
 function _   = Nothing
 
 parse :: [String] -> [Term]
 parse = map go
-  where go x =
-          case function x of
-            Just y  -> Operator y
-            Nothing -> Number $ read x
+  where go x = fromMaybe (Number $ read x) $ function x
 
 reduce :: [Term] -> [Int] -> Int
 reduce (Operator x:xs) (a:b:cs) = reduce xs $ x a b : cs
