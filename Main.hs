@@ -1,6 +1,7 @@
 module Main where
 
 import System.Environment (getArgs)
+import Control.Monad (liftM)
 
 data Function = Multiply | Divide | Add | Subtract
               deriving (Show,Eq)
@@ -37,7 +38,8 @@ reduce [] [x]                   = x
 reduce (Operator x:xs) _        = error "Stack underflow"
 reduce [] _                     = error "Operator missing"
 
+calculate :: [String] -> Int
+calculate = flip reduce [] . parse
+
 main :: IO ()
-main = do
-    args <- getArgs
-    print $ reduce (parse args) []
+main = liftM calculate getArgs >>= print
