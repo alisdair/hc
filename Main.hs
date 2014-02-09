@@ -27,12 +27,12 @@ parse = map go
             Just y  -> Left y
             Nothing -> Right $ read x
 
-reduce :: [Either Operator Int] -> [Int] -> [Int]
-reduce (x:xs) stack =
-    case x of
-      Left y -> reduce xs $ evaluate y (head stack) (head $ tail stack) : drop 2 stack
-      Right y -> reduce xs $ y : stack
-reduce [] stack = stack
+reduce :: [Either Operator Int] -> [Int] -> Int
+reduce (Left x:xs) (a:b:cs) = reduce xs $ evaluate x a b : cs
+reduce (Right x:xs) stack   = reduce xs $ x : stack
+reduce [] [x]               = x
+reduce (Left x:xs) _        = error "Stack underflow"
+reduce [] _                 = error "Operator missing"
 
 main :: IO ()
 main = do
