@@ -2,17 +2,20 @@ module Main where
 
 import System.Environment (getArgs)
 
-data Operator = Multiply | Divide | Add | Subtract
+data Function = Multiply | Divide | Add | Subtract
               deriving (Show,Eq)
 
-operator :: String -> Maybe Operator
-operator "*" = Just Multiply
-operator "/" = Just Divide
-operator "+" = Just Add
-operator "-" = Just Subtract
-operator _   = Nothing
+data Term = Operator Function | Number Int
+          deriving (Show,Eq)
 
-evaluate :: Operator -> Int -> Int -> Int
+function :: String -> Maybe Function
+function "*" = Just Multiply
+function "/" = Just Divide
+function "+" = Just Add
+function "-" = Just Subtract
+function _   = Nothing
+
+evaluate :: Function -> Int -> Int -> Int
 evaluate op =
     case op of
       Multiply -> (*)
@@ -20,19 +23,19 @@ evaluate op =
       Add      -> (+)
       Subtract -> (-)
 
-parse :: [String] -> [Either Operator Int] 
+parse :: [String] -> [Term]
 parse = map go
   where go x =
-          case operator x of
-            Just y  -> Left y
-            Nothing -> Right $ read x
+          case function x of
+            Just y  -> Operator y
+            Nothing -> Number $ read x
 
-reduce :: [Either Operator Int] -> [Int] -> Int
-reduce (Left x:xs) (a:b:cs) = reduce xs $ evaluate x a b : cs
-reduce (Right x:xs) stack   = reduce xs $ x : stack
-reduce [] [x]               = x
-reduce (Left x:xs) _        = error "Stack underflow"
-reduce [] _                 = error "Operator missing"
+reduce :: [Term] -> [Int] -> Int
+reduce (Operator x:xs) (a:b:cs) = reduce xs $ evaluate x a b : cs
+reduce (Number x:xs) stack      = reduce xs $ x : stack
+reduce [] [x]                   = x
+reduce (Operator x:xs) _        = error "Stack underflow"
+reduce [] _                     = error "Operator missing"
 
 main :: IO ()
 main = do
